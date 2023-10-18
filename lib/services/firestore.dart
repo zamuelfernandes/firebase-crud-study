@@ -6,7 +6,7 @@ class FirestoreService {
       FirebaseFirestore.instance.collection('notes');
 
   //CREATE
-  Future<void> addNote({required String note}) {
+  Future<void> createNote({required String note}) {
     return notes.add({
       'note': note,
       'timestamp': Timestamp.now(),
@@ -14,7 +14,7 @@ class FirestoreService {
   }
 
   //READ
-  Stream<QuerySnapshot> getNotesStream() {
+  Stream<QuerySnapshot> readNotes() {
     final notesStream =
         notes.orderBy('timestamp', descending: false).snapshots();
 
@@ -32,4 +32,7 @@ class FirestoreService {
   }
 
   //DELETE
+  Future<void> deleteNote({required String docID}) {
+    return notes.doc(docID).delete();
+  }
 }

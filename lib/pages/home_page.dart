@@ -15,22 +15,30 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _updateNoteController = TextEditingController();
 
   void openNoteBox({
-    required TextEditingController controller,
+    TextEditingController? controller,
+    String? title,
     required void Function()? actionPressed,
     required String actionText,
   }) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog.adaptive(
-        content: TextField(
-          controller: controller,
-        ),
+        actionsPadding: const EdgeInsets.all(20),
+        content: title == null
+            ? TextField(
+                controller: controller,
+              )
+            : Text(
+                title,
+                textAlign: TextAlign.center,
+              ),
         actions: [
           ElevatedButton(
             onPressed: actionPressed,
             child: Text(actionText),
           ),
         ],
+        actionsAlignment: MainAxisAlignment.center,
       ),
     );
   }
@@ -39,6 +47,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text(
           'NOTES',
           style: TextStyle(
@@ -47,7 +56,7 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       body: StreamBuilder(
-        stream: firestoreService.getNotesStream(),
+        stream: firestoreService.readNotes(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List notesList = snapshot.data!.docs;
@@ -65,23 +74,43 @@ class _HomePageState extends State<HomePage> {
 
                 return ListTile(
                   title: Text(noteText),
-                  trailing: IconButton(
-                    onPressed: () {
-                      openNoteBox(
-                        controller: _updateNoteController,
-                        actionPressed: () {
-                          firestoreService.updateNote(
-                            docID: documentID,
-                            newNote: _updateNoteController.text,
-                          );
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          openNoteBox(
+                            controller: _updateNoteController,
+                            actionPressed: () {
+                              firestoreService.updateNote(
+                                docID: documentID,
+                                newNote: _updateNoteController.text,
+                              );
 
-                          _createNoteController.clear();
-                          Navigator.pop(context);
+                              _createNoteController.clear();
+                              Navigator.pop(context);
+                            },
+                            actionText: 'Update',
+                          );
                         },
-                        actionText: 'Update',
-                      );
-                    },
-                    icon: const Icon(Icons.draw),
+                        icon: const Icon(Icons.draw),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          openNoteBox(
+                            title: 'Dele this Note?\n(Click out to Escape)',
+                            actionPressed: () {
+                              firestoreService.deleteNote(
+                                docID: documentID,
+                              );
+                              Navigator.pop(context);
+                            },
+                            actionText: 'Delete',
+                          );
+                        },
+                        icon: const Icon(Icons.delete_forever),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -97,7 +126,7 @@ class _HomePageState extends State<HomePage> {
             controller: _createNoteController,
             actionText: 'Add',
             actionPressed: () {
-              firestoreService.addNote(
+              firestoreService.createNote(
                 note: _createNoteController.text,
               );
               _createNoteController.clear();
