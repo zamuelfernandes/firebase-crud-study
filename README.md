@@ -14,8 +14,8 @@ Antes de começar, certifique-se de que você tenha o seguinte configurado em se
 ### Clone o repositório:
 
 ```
-git clone https://github.com/seu-usuario/seu-projeto.git
-cd seu-projeto
+git clone https://github.com/zamuelfernandes/firebase-crud-study.git
+cd firebase-crud-study
 ```
 ### Instale as dependências:
 
